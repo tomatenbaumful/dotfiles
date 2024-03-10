@@ -112,6 +112,7 @@ return {
 	{
 		"neovim/nvim-lspconfig",
 		dependencies = {
+			"mfussenegger/nvim-dap",
 			{
 				"williamboman/mason.nvim",
 				build = ":MasonUpdate",
@@ -119,7 +120,10 @@ return {
 			"williamboman/mason-lspconfig.nvim",
 			"folke/neodev.nvim",
 			"b0o/schemastore.nvim",
-			"simrat39/rust-tools.nvim",
+			{
+				"mrcjkb/rustaceanvim",
+				version = "^4",
+			},
 			{
 				"kevinhwang91/nvim-ufo",
 				dependencies = "kevinhwang91/promise-async",
@@ -147,7 +151,7 @@ return {
 				ui = { border = "rounded" },
 			})
 
-			local function on_attach(_, bufnr)
+			local function on_attach(client, bufnr)
 				local function nmap(keys, func, desc)
 					if desc then
 						desc = "LSP: " .. desc
@@ -162,11 +166,11 @@ return {
 				nmap("gD", vim.lsp.buf.declaration, "Goto Declaration")
 				nmap("gr", require("telescope.builtin").lsp_references, "Goto References")
 				nmap("gi", vim.lsp.buf.implementation, "Goto Implementation")
-				nmap("<leader>td", vim.lsp.buf.type_definition, "Type Definition")
+				nmap("<leader>D", vim.lsp.buf.type_definition, "Type Definition")
 				nmap("<leader>ds", require("telescope.builtin").lsp_document_symbols, "Document Symbols")
 				nmap("<leader>ws", require("telescope.builtin").lsp_dynamic_workspace_symbols, "Workspace Symbols")
-				nmap("<leader>hd", vim.lsp.buf.hover, "Hover Documentation")
-				nmap("<leader>sd", vim.lsp.buf.signature_help, "Signature Documentation")
+				nmap("K", vim.lsp.buf.hover, "Hover Documentation")
+				nmap("<C-k>", vim.lsp.buf.signature_help, "Signature Documentation")
 				nmap("<leader>wa", vim.lsp.buf.add_workspace_folder, "Workspace Add Folder")
 				nmap("<leader>wr", vim.lsp.buf.remove_workspace_folder, "Workspace Remove Folder")
 				nmap("<leader>wl", function()
@@ -189,9 +193,9 @@ return {
 					require("conform").format({ async = true, lsp_fallback = true, range = range })
 				end, { range = true })
 
-				nmap("gl", "<cmd>lua vim.diagnostic.open_float()<cr>", "Open diagnostics")
-				nmap("[d", "<cmd>lua vim.diagnostic.goto_prev()<cr>", "Previous diagnostic")
-				nmap("]d", "<cmd>lua vim.diagnostic.goto_next()<cr>", "Next diagnostic")
+				nmap("gl", vim.diagnostic.open_float, "Open diagnostics")
+				nmap("[d", vim.diagnostic.goto_prev, "Previous diagnostic")
+				nmap("]d", vim.diagnostic.goto_next, "Next diagnostic")
 			end
 
 			local mason_lspconfig = require("mason-lspconfig")
@@ -200,6 +204,18 @@ return {
 			-- ########################### NEODEV ###########################
 			local neodev = require("neodev")
 			neodev.setup()
+
+			-- ########################### RUST ###########################
+			vim.g.rustaceanvim = {
+				server = {
+					on_attach = function(client, bufnr)
+						on_attach(client, bufnr)
+						vim.keymap.set("n", "<leader>ca", function()
+							vim.cmd.RustLsp("codeAction")
+						end, { buffer = bufnr, desc = "RustLsp Code Action", silent = true })
+					end,
+				},
+			}
 
 			-- ########################### LSP ###########################
 			local capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -266,14 +282,6 @@ return {
 						settings = servers[server_name],
 					})
 				end,
-			})
-
-			-- ########################### RUST ###########################
-			require("rust-tools").setup({
-				server = {
-					on_attach = on_attach,
-					capabilities = capabilities,
-				},
 			})
 
 			-- ########################### UFO ###########################

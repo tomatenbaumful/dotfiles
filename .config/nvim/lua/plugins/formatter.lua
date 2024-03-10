@@ -37,12 +37,11 @@ return {
 	end,
 	config = function(_, opts)
 		local conform = require("conform")
-		local util = require("conform.util")
 
 		conform.setup(opts)
 
 		-- Customize prettier args
-		require("conform.formatters.prettier").args = function(ctx)
+		require("conform.formatters.prettier").args = function(self, ctx)
 			local args = { "--stdin-filepath", "$FILENAME" }
 			local localPrettierConfig = vim.fs.find(".prettierrc.json", {
 				upward = true,

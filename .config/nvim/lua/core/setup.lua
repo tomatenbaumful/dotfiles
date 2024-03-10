@@ -1,6 +1,10 @@
 vim.g.mapleader = " "
 vim.g.copilot_assume_mapped = true
 
+pcall(function()
+	vim.api.nvim_exec2("language en_US", {})
+end)
+
 vim.keymap.set("n", "<leader>fa", "gg=G<C-o>")
 -- New tab
 vim.keymap.set("n", "tn", ":tabnew %<CR>", { desc = "New tab" })
@@ -34,6 +38,28 @@ vim.keymap.set("n", "N", "Nzzzv", { desc = "Jump to previous search term" })
 
 -- Pastes copied buffer and keeps it in the register
 vim.keymap.set("x", "<leader>p", '"_dP')
+
+vim.g.clipboard = {
+	name = "WslClipboard",
+	copy = {
+		["+"] = "clip.exe",
+		["*"] = "clip.exe",
+	},
+	paste = {
+		["+"] = 'bash -c "gwclip"',
+		["*"] = 'bash -c "gwclip"',
+	},
+}
+-- Copy
+vim.keymap.set("v", "<leader>y", '"+y')
+vim.keymap.set("n", "<leader>y", '"+yg_')
+vim.keymap.set("n", "<leader>Y", '"+y')
+vim.keymap.set("n", "<leader>yy", '"+yy')
+-- Paste
+vim.keymap.set("v", "<leader>p", '"+p')
+vim.keymap.set("v", "<leader>P", '"+P')
+vim.keymap.set("n", "<leader>p", '"+p')
+vim.keymap.set("n", "<leader>P", '"+P')
 
 local opts = {
 	shiftwidth = 2,
